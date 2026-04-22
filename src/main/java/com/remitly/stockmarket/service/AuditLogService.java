@@ -1,0 +1,50 @@
+package com.remitly.stockmarket.service;
+
+import com.remitly.stockmarket.dto.AuditLogResponse;
+import com.remitly.stockmarket.entity.AuditLogEntity;
+import com.remitly.stockmarket.event.TradeCompletedEvent;
+import com.remitly.stockmarket.repository.AuditLogRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AuditLogService {
+
+    private final AuditLogRepository auditLogRepository;
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void logTrade(TradeCompletedEvent event) {
+        AuditLogEntity logEntry = AuditLogEntity.builder()
+                .operationType(event.getOperationType())
+                .walletId(event.getWalletId())
+                .stockName(event.getStockName())
+                .build();
+
+        auditLogRepository.save(logEntry);
+        log.debug("Audit log saved: {} - {} - {}", event.getOperationType(), event.getWalletId(), event.getStockName());
+    }
+
+    @Transactional(readOnly = true)
+    public AuditLogResponse getAuditLog() {
+        List<AuditLogEntity> logs = auditLogRepository.findAllOrderByCreatedAtAsc();
+
+        List<AuditLogResponse.LogEntry> logEntries = logs.stream()
+                .map(log -> AuditLogResponse.LogEntry.builder()
+                        .operationType(log.getOperationType())
+                        .walletId(log.getWalletId())
+                        .stockName(log.getStockName())
+                        .build())
+                .collect(Collectors.toList());
+
+        return AuditLogResponse.builder().log(logEntries).build();
+    }
+}

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "wallet_stocks")
 @Data
@@ -20,16 +22,11 @@ public class WalletStockEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("walletId")
-    @JoinColumn(name = "wallet_id")
-    private WalletEntity wallet;
-
     @Data
     @Embeddable
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class WalletStockId implements java.io.Serializable {
+    public static class WalletStockId implements Serializable {
         @Column(name = "wallet_id")
         private String walletId;
 
