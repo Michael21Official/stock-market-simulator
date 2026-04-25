@@ -10,25 +10,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Stock Market Simulator API")
-                        .version("1.0")
-                        .description("Simplified stock exchange simulator for Remitly coding task\n\n" +
-                                "Features:\n" +
-                                "- Buy/sell stocks (fixed price 1)\n" +
-                                "- Bank as sole liquidity provider\n" +
-                                "- Audit log of all wallet operations\n" +
-                                "- High availability with multiple instances\n" +
-                                "- Chaos endpoint for instance killing")
-                        .contact(new Contact()
-                                .name("Michał Matsalak")
-                                .email("matsalakmichal@gmail.com")
-                                .url("https://github.com/Michael21Official"))
-                        .license(new License()
-                                .name("MIT")
-                                .url("https://opensource.org/licenses/MIT")));
-    }
+        @Bean
+        public OpenAPI customOpenAPI() {
+                return new OpenAPI()
+                                .info(new Info()
+                                                .title("Stock Market Simulator API")
+                                                .version("1.0")
+                                                .description("Simplified stock exchange simulator for Remitly coding task")
+                                                .contact(new Contact()
+                                                                .name("Michał Matsalak")
+                                                                .email("matsalakmichal@gmail.com"))
+                                                .license(new License()
+                                                                .name("MIT")
+                                                                .url("https://opensource.org/licenses/MIT")));
+        }
 }

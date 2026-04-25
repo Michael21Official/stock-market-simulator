@@ -22,7 +22,10 @@ public class AuditLogService {
     private final AuditLogRepository auditLogRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void logTrade(TradeCompletedEvent event) {
+    public void handleTradeCompleted(TradeCompletedEvent event) {
+        log.info("Audit log event received: {} - {} - {}", event.getOperationType(), event.getWalletId(),
+                event.getStockName());
+
         AuditLogEntity logEntry = AuditLogEntity.builder()
                 .operationType(event.getOperationType())
                 .walletId(event.getWalletId())
@@ -30,7 +33,8 @@ public class AuditLogService {
                 .build();
 
         auditLogRepository.save(logEntry);
-        log.debug("Audit log saved: {} - {} - {}", event.getOperationType(), event.getWalletId(), event.getStockName());
+        auditLogRepository.flush();
+        log.info("Audit log saved successfully");
     }
 
     @Transactional(readOnly = true)
@@ -45,6 +49,7 @@ public class AuditLogService {
                         .build())
                 .collect(Collectors.toList());
 
+        log.info("Returning {} audit log entries", logEntries.size());
         return AuditLogResponse.builder().log(logEntries).build();
     }
 }

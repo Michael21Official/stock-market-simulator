@@ -18,6 +18,17 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    enabled: true
+  model-and-view-allowed: true
+  show-actuator: false
+
 server:
   port: 8080
 
