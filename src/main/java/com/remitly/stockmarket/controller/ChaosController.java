@@ -4,13 +4,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.concurrent.Executors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -25,21 +27,24 @@ public class ChaosController {
 
     @Operation(summary = "Kill this instance", description = "Terminates the application instance that receives this request")
     @PostMapping
-    public ResponseEntity<String> chaos() {
-        log.warn("Chaos endpoint called on instance with port {}. Shutting down...", port);
+    public ResponseEntity<Map<String, String>> chaos() {
+        String instanceId = "instance-on-port-" + port;
+        log.warn("☠️ Chaos endpoint called on {}. Shutting down gracefully...", instanceId);
 
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            executor.submit(() -> {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                log.info("Goodbye from instance on port {}!", port);
-                System.exit(0);
-            });
-        }
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Killing " + instanceId + " gracefully...");
+        response.put("status", "goodbye");
 
-        return ResponseEntity.ok("Killing instance on port " + port + " gracefully...");
+        new Thread(() -> {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            log.info("👋 Goodbye from {}!", instanceId);
+            SpringApplication.exit(applicationContext, () -> 0);
+        }).start();
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-stock
+    environment:
+      POSTGRES_DB: stockdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - stock-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d stockdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app1:
+    build: .
+    container_name: stock-app-1
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: pass
+      SERVER_PORT: 8080
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stock-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  app2:
+    build: .
+    container_name: stock-app-2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: pass
+      SERVER_PORT: 8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stock-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  app3:
+    build: .
+    container_name: stock-app-3
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: pass
+      SERVER_PORT: 8080
+    ports:
+      - "8083:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stock-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  stock-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

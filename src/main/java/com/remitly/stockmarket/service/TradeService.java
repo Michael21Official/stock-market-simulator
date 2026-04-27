@@ -22,7 +22,7 @@ public class TradeService {
     private final WalletService walletService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Retryable(value = { Exception.class }, maxAttempts = 3, backoff = @Backoff(delay = 100, multiplier = 2))
+    @Retryable(retryFor = { Exception.class }, maxAttempts = 3, backoff = @Backoff(delay = 100, multiplier = 2))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void buyStock(String walletId, String stockName) {
         log.info("Processing BUY: wallet={}, stock={}", walletId, stockName);
@@ -52,7 +52,7 @@ public class TradeService {
         }
     }
 
-    @Retryable(value = { Exception.class }, maxAttempts = 3, backoff = @Backoff(delay = 100, multiplier = 2))
+    @Retryable(retryFor = { Exception.class }, maxAttempts = 3, backoff = @Backoff(delay = 100, multiplier = 2))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void sellStock(String walletId, String stockName) {
         log.info("Processing SELL: wallet={}, stock={}", walletId, stockName);
