@@ -28,6 +28,7 @@ services:
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: pass
       SERVER_PORT: 8080
+      API_KEY: remitly-internship-2026-secret-key
     expose:
       - "8080"
     depends_on:
@@ -49,6 +50,7 @@ services:
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: pass
       SERVER_PORT: 8080
+      API_KEY: remitly-internship-2026-secret-key
     expose:
       - "8080"
     depends_on:
@@ -70,6 +72,7 @@ services:
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: pass
       SERVER_PORT: 8080
+      API_KEY: remitly-internship-2026-secret-key
     expose:
       - "8080"
     depends_on:
