@@ -23,6 +23,8 @@ services:
   app1:
     build: .
     container_name: stock-app-1
+    ports:
+      - "8081:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockdb
       SPRING_DATASOURCE_USERNAME: user
@@ -45,6 +47,8 @@ services:
   app2:
     build: .
     container_name: stock-app-2
+    ports:
+      - "8082:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockdb
       SPRING_DATASOURCE_USERNAME: user
@@ -67,6 +71,8 @@ services:
   app3:
     build: .
     container_name: stock-app-3
+    ports:
+      - "8083:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockdb
       SPRING_DATASOURCE_USERNAME: user

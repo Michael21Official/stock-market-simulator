@@ -6,6 +6,7 @@ import com.remitly.stockmarket.entity.BankStockEntity;
 import com.remitly.stockmarket.exception.InsufficientStockInBankException;
 import com.remitly.stockmarket.exception.StockNotFoundException;
 import com.remitly.stockmarket.repository.BankStockRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,18 +29,22 @@ class BankServiceTest {
     @InjectMocks
     private BankService bankService;
 
+    private static final String STOCK_NAME = "AAPL";
+    private static final int INITIAL_QUANTITY = 100;
+
+    @BeforeEach
+    void setUp() {
+    }
+
     @Test
     void getBankStocks_ShouldReturnAllStocks() {
-        // Given
         List<BankStockEntity> stocks = List.of(
                 BankStockEntity.builder().stockName("AAPL").quantity(100).build(),
                 BankStockEntity.builder().stockName("GOOG").quantity(50).build());
         when(bankStockRepository.findAll()).thenReturn(stocks);
 
-        // When
         BankStocksResponse response = bankService.getBankStocks();
 
-        // Then
         assertThat(response.getBankStocks()).hasSize(2);
         assertThat(response.getBankStocks().get(0).getStockName()).isEqualTo("AAPL");
         assertThat(response.getBankStocks().get(0).getQuantity()).isEqualTo(100);
@@ -47,52 +52,82 @@ class BankServiceTest {
 
     @Test
     void setBankStocks_ShouldDeleteOldAndSaveNew() {
-        // Given
         BankStocksRequest request = BankStocksRequest.builder()
                 .stocks(List.of(
                         BankStocksRequest.StockItem.builder().name("AAPL").quantity(100).build()))
                 .build();
 
-        // When
         bankService.setBankStocks(request);
 
-        // Then
         verify(bankStockRepository).deleteAll();
         verify(bankStockRepository).saveAll(any());
     }
 
     @Test
     void decreaseStock_ShouldDecreaseQuantity_WhenStockExists() {
-        // Given
-        BankStockEntity stock = BankStockEntity.builder().stockName("AAPL").quantity(100).build();
-        when(bankStockRepository.findForUpdate("AAPL")).thenReturn(Optional.of(stock));
+        BankStockEntity stock = BankStockEntity.builder().stockName(STOCK_NAME).quantity(INITIAL_QUANTITY).build();
+        when(bankStockRepository.findForUpdate(STOCK_NAME)).thenReturn(Optional.of(stock));
 
-        // When
-        bankService.decreaseStock("AAPL", 1);
+        bankService.decreaseStock(STOCK_NAME, 1);
 
-        // Then
         assertThat(stock.getQuantity()).isEqualTo(99);
         verify(bankStockRepository).save(stock);
     }
 
     @Test
     void decreaseStock_ShouldThrowException_WhenStockNotFound() {
-        // Given
         when(bankStockRepository.findForUpdate("UNKNOWN")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> bankService.decreaseStock("UNKNOWN", 1))
                 .isInstanceOf(StockNotFoundException.class);
     }
 
     @Test
     void decreaseStock_ShouldThrowException_WhenInsufficientQuantity() {
-        // Given
-        BankStockEntity stock = BankStockEntity.builder().stockName("AAPL").quantity(0).build();
-        when(bankStockRepository.findForUpdate("AAPL")).thenReturn(Optional.of(stock));
+        BankStockEntity stock = BankStockEntity.builder().stockName(STOCK_NAME).quantity(0).build();
+        when(bankStockRepository.findForUpdate(STOCK_NAME)).thenReturn(Optional.of(stock));
 
-        // When & Then
-        assertThatThrownBy(() -> bankService.decreaseStock("AAPL", 1))
+        assertThatThrownBy(() -> bankService.decreaseStock(STOCK_NAME, 1))
                 .isInstanceOf(InsufficientStockInBankException.class);
+    }
+
+    @Test
+    void increaseStock_ShouldIncreaseQuantity_WhenStockExists() {
+        BankStockEntity stock = BankStockEntity.builder().stockName(STOCK_NAME).quantity(INITIAL_QUANTITY).build();
+        when(bankStockRepository.findForUpdate(STOCK_NAME)).thenReturn(Optional.of(stock));
+
+        bankService.increaseStock(STOCK_NAME, 1);
+
+        assertThat(stock.getQuantity()).isEqualTo(101);
+        verify(bankStockRepository).save(stock);
+    }
+
+    @Test
+    void increaseStock_ShouldCreateStock_WhenNotExists() {
+        BankStockEntity newStock = BankStockEntity.builder().stockName(STOCK_NAME).quantity(0).build();
+        when(bankStockRepository.findForUpdate(STOCK_NAME)).thenReturn(Optional.empty());
+        when(bankStockRepository.save(any(BankStockEntity.class))).thenReturn(newStock);
+
+        bankService.increaseStock(STOCK_NAME, 1);
+
+        verify(bankStockRepository).save(any(BankStockEntity.class));
+    }
+
+    @Test
+    void getStockQuantity_ShouldReturnZero_WhenStockNotFound() {
+        when(bankStockRepository.findById(STOCK_NAME)).thenReturn(Optional.empty());
+
+        int quantity = bankService.getStockQuantity(STOCK_NAME);
+
+        assertThat(quantity).isZero();
+    }
+
+    @Test
+    void stockExists_ShouldReturnTrue_WhenStockExists() {
+        when(bankStockRepository.existsByStockName(STOCK_NAME)).thenReturn(true);
+
+        boolean exists = bankService.stockExists(STOCK_NAME);
+
+        assertThat(exists).isTrue();
     }
 }

@@ -81,6 +81,32 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ProblemDetail handleRuntimeException(RuntimeException e) {
+        log.error("RuntimeException caught: ", e);
+
+        Throwable cause = e.getCause();
+        if (cause != null) {
+            if (cause instanceof StockNotFoundException) {
+                return handleStockNotFound((StockNotFoundException) cause);
+            }
+            if (cause instanceof InsufficientStockInBankException) {
+                return handleInsufficientStockInBank((InsufficientStockInBankException) cause);
+            }
+            if (cause instanceof InsufficientStockInWalletException) {
+                return handleInsufficientStockInWallet((InsufficientStockInWalletException) cause);
+            }
+            if (cause instanceof WalletNotFoundException) {
+                return handleWalletNotFound((WalletNotFoundException) cause);
+            }
+        }
+
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        pd.setTitle("Internal Server Error");
+        pd.setType(URI.create("https://api.stockmarket.com/errors/internal"));
+        return pd;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGenericException(Exception e) {
         log.error("Unexpected error: ", e);

@@ -55,6 +55,3 @@ logging:
   level:
     com.remitly.stockmarket: DEBUG
     org.springframework.retry: DEBUG
-
-api:
-  key: remitly-internship-2026-secret-key

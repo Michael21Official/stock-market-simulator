@@ -115,23 +115,25 @@ class TradeIntegrationTest {
         }
 
         @Test
-        void shouldReturn500WhenStockDoesNotExist() {
+        void shouldReturn404WhenStockDoesNotExist() {
                 ResponseEntity<String> response = restTemplate.exchange(
                                 "/wallets/wallet-404/stocks/UNKNOWN", HttpMethod.POST,
                                 new HttpEntity<>(Map.of("type", "buy"), headers),
                                 String.class);
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
 
         @Test
-        void shouldReturn500WhenBuyingStockNotInBank() {
-                restTemplate.exchange("/stocks", HttpMethod.POST,
-                                new HttpEntity<>(Map.of("stocks", List.of()), headers), Void.class);
+        void shouldReturn400WhenBuyingStockNotInBank() {
+                Map<String, Object> bankRequest = Map.of("stocks",
+                                List.of(Map.of("name", "AAPL", "quantity", 0)));
+                restTemplate.exchange("/stocks", HttpMethod.POST, new HttpEntity<>(bankRequest, headers), Void.class);
 
                 ResponseEntity<String> response = restTemplate.exchange(
                                 "/wallets/wallet-400/stocks/AAPL", HttpMethod.POST,
                                 new HttpEntity<>(Map.of("type", "buy"), headers),
                                 String.class);
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
 }
