@@ -20,6 +20,8 @@ fi
 PORT=${1:-8080}
 echo -e "${YELLOW}Using port: ${PORT}${NC}"
 
+export API_PORT=${PORT}
+
 echo -e "${YELLOW}Stopping existing containers...${NC}"
 docker-compose down 2>/dev/null
 
@@ -35,6 +37,7 @@ docker-compose ps
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Application is running!${NC}"
+echo -e "${YELLOW}Available on: http://localhost:${PORT}${NC}"
 echo -e "${YELLOW}Available instances:${NC}"
 echo -e "  Instance 1: http://localhost:8081"
 echo -e "  Instance 2: http://localhost:8082"
@@ -47,9 +50,9 @@ echo -e "${GREEN}========================================${NC}"
 echo -e ""
 echo -e "${YELLOW}Testing High Availability...${NC}"
 echo -e "Kill instance 1 (POST /chaos):"
-echo -e "  curl -X POST http://localhost:8081/chaos"
+echo -e "  curl -X POST http://localhost:8081/chaos -H \"X-API-Key: remitly-internship-2026-secret-key\""
 echo -e ""
 echo -e "Check if instance 2 still works:"
-echo -e "  curl http://localhost:8082/stocks"
+echo -e "  curl -H \"X-API-Key: remitly-internship-2026-secret-key\" http://localhost:${PORT}/stocks"
 echo -e ""
 echo -e "${GREEN}To stop all containers: docker-compose down${NC}"
